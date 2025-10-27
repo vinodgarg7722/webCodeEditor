@@ -8,8 +8,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const playgrounds = await getAllPlaygroundForUser();
-
+  const PlaygroundData = await getAllPlaygroundForUser();
+  
+  console.log("[playgroundData", PlaygroundData);
   const technologyIconMap: Record<string, string> = {
     REACT: "Zap",
     NEXTJS: "Lightbulb",
@@ -19,12 +20,10 @@ export default async function DashboardLayout({
     ANGULAR: "Terminal",
   };
 
-  const formattedPlaygroundData = playgrounds?.map((item) => ({
+  const formattedPlaygroundData = PlaygroundData?.map((item) => ({
     id: item.id,
     name: item.title,
-    
-    // TODO: Add starred status later
-    starred:false,
+    starred:item.Starmark?.[0]?.isMarked || false,
     icon: technologyIconMap[item.template] || "Code2", // fallback icon
     
   }));

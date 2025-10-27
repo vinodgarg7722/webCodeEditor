@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,15 +20,16 @@ enum UserRole {
 }
 
 model User {
-  id       String    @id @default(auto()) @map("_id") @db.ObjectId
-  email    String    @unique
+  id       String    @id @default(cuid()) @map("_id")
   name     String?
+  email    String    @unique
   image    String?
   accounts Account[]
   role     UserRole  @default(USER)
 
-  myPlayground Playground[]
-  
+  myPlaground      Playground[]
+  staredPlayground StarMark[]
+  chatMessages     ChatMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,9 +72,42 @@ model Playground {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
- 
+  Starmark StarMark[]
   userId   String
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // todo templateFiles TemplateFile[]
+  templateFiles TemplateFile[]
+}
+
+model StarMark {
+  id           String     @id @default(cuid()) @map("_id")
+  userId       String
+  playgroundId String
+  isMarked     Boolean
+  createdAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, playgroundId])
+}
+
+model TemplateFile {
+  id           String     @id @default(cuid()) @map("_id")
+  content      Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  playgroundId String     @unique
+  playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  role      String // "user" or "assitant"
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
