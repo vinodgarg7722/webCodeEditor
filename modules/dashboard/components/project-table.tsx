@@ -1,6 +1,6 @@
 
 "use client"
-
+import { MarkedToggleButton } from "./marked-toggle"
 import Image from "next/image"
 import { format } from "date-fns"
 import type { Project } from "../types"
@@ -59,7 +59,7 @@ export default function ProjectTable({
   onUpdateProject,
   onDeleteProject,
   onDuplicateProject,
-  onMarkasFavorite,
+  // onMarkasFavorite,
 }: ProjectTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -67,34 +67,81 @@ export default function ProjectTable({
   const [editData, setEditData] = useState<EditProjectData>({ title: "", description: "" })
   const [isLoading, setIsLoading] = useState(false)
   const [favoutrie, setFavourite] = useState(false)
-  
+
+
   const handleEditClick = (project: Project) => {
-//    Write your logic here
-  }
+    setSelectedProject(project);
+    setEditData({
+      title: project.title,
+      description: project.description || "",
+    });
+    setEditDialogOpen(true);
+  };
 
   const handleDeleteClick = async (project: Project) => {
-    //    Write your logic here
-  }
+    setSelectedProject(project);
+
+    setDeleteDialogOpen(true);
+  };
 
   const handleUpdateProject = async () => {
-   //    Write your logic here
-  }
+    if (!selectedProject || !onUpdateProject) return;
+
+    setIsLoading(true);
+
+    try {
+      await onUpdateProject(selectedProject.id, editData);
+      setEditDialogOpen(false);
+      toast.success("Project updated successfully");
+    } catch (error) {
+      toast.error("Failed to update project");
+      console.error("Error updating project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMarkasFavorite = async (project: Project) => {
-   //    Write your logic here
-  }
+    //    Write your logic here
+  };
 
   const handleDeleteProject = async () => {
-   //    Write your logic here
-  }
+    if (!selectedProject || !onDeleteProject) return;
+
+    setIsLoading(true);
+    try {
+      await onDeleteProject(selectedProject.id);
+      setDeleteDialogOpen(false);
+      setSelectedProject(null);
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete project");
+      console.error("Error deleting project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDuplicateProject = async (project: Project) => {
-    //    Write your logic here
-  }
+    if (!onDuplicateProject) return;
+
+    setIsLoading(true);
+    try {
+      await onDuplicateProject(project.id);
+      toast.success("Project duplicated successfully");
+    } catch (error) {
+      toast.error("Failed to duplicate project");
+      console.error("Error duplicating project:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const copyProjectUrl = (projectId: string) => {
-    //    Write your logic here
-  }
+    const url = `${window.location.origin}/playground/${projectId}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Project url copied to clipboard");
+  };
 
   return (
     <>
@@ -125,7 +172,13 @@ export default function ProjectTable({
                     {project.template}
                   </Badge>
                 </TableCell>
-                <TableCell>{format(new Date(project.createdAt), "MMM d, yyyy")}</TableCell>
+
+                <TableCell>
+                  <span className="text-sm text-gray-500"></span>
+                  {format(new Date(project.createdAt), "MMM d, yyyy")}
+                  
+                  </TableCell>
+
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full overflow-hidden">
@@ -150,7 +203,7 @@ export default function ProjectTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        {/* <MarkedToggleButton markedForRevision={project.Starmark[0]?.isMarked} id={project.id} /> */}
+                        <MarkedToggleButton markedForRevision={project.Starmark[0]?.isMarked} id={project.id} />
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href={`/playground/${project.id}`} className="flex items-center">
